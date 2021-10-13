@@ -1,0 +1,53 @@
+# Deployment and Service (deployments, service)
+
+# ### Deployment 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+# Deployment specific configuration    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # All the pods that match this label belomg
+      # To this deployment.
+      app: mongo
+  # Configuration of the pod within deployment-config     
+  template:
+    metadata:
+      labels: # Non optional for pods
+        app: mongo
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:5.0
+        ports:
+          - containerPort: 27017
+        env: # from mongo-secret
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom: 
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password
+
+---
+# ### Service configuration
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service # See mongo-config
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 27017

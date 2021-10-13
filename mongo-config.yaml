@@ -1,0 +1,8 @@
+# Mongo config File (configuration)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-config
+data:
+  # The name of the MongoDb service
+  mongo-url: mongo-service 

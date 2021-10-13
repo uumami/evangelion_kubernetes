@@ -1,0 +1,61 @@
+# Deployment and Service (deployments, service)
+
+# ### Deployment 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+  labels:
+    app: webapp
+# Deployment specific configuration    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # All the pods that match this label belomg
+      # To this deployment.
+      app: webapp
+  # Configuration of the pod within deployment-config     
+  template:
+    metadata:
+      labels: # Non optional for pods
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: nanajanashia/k8s-demo-app:v1.0
+        ports:
+          - containerPort: 3000
+        env:
+        - name: USER_NAME
+          valueFrom: 
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: USER_PWD
+          valueFrom: 
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef: 
+              name: mongo-config
+              key: mongo-url
+
+
+---
+# ### Service configuration
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service 
+spec:
+  type: NodePort
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30100
